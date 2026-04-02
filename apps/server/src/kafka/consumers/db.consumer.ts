@@ -19,13 +19,25 @@ export const startDbConsumer = async () => {
       const event: KafkaEvent = JSON.parse(message.value.toString())
       console.log(`DB Consumer processing: ${event.eventType}`)
 
+      // Look up real UUID from github username
+      const userResult = await query(
+        `SELECT id FROM users WHERE username = $1`,
+        [event.userId]
+      )
+
+      if (!userResult.rows[0]) {
+        console.warn(`User not found for username: ${event.userId}, skipping event`)
+        return
+      }
+
+      const userUUID = userResult.rows[0].id
+
       await query(
         `INSERT INTO events (user_id, repo_id, event_type, payload, received_at)
-         VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT DO NOTHING`,
+         VALUES ($1, $2, $3, $4, $5)`,
         [
-          event.userId,
-          event.repoId,
+          userUUID,
+          null,
           event.eventType,
           JSON.stringify(event.payload),
           event.receivedAt

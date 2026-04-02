@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { validateWebhookSignature } from '../middleware/ValidateWebhook'
-import { GitHubPushPayload } from '@pulseboard/shared'
+import { GitHubPushPayload, KafkaEvent } from '@pulseboard/shared'
+import { publishEvent } from '../kafka/producer'
 
 const router = Router()
 
@@ -24,15 +25,19 @@ router.post(
         console.log(`Unhandled event type: ${event}`)
     }
 
-    // Always return 200 immediately — heavy processing goes to Kafka later
     res.status(200).json({ received: true })
   }
 )
 
 const handlePushEvent = async (payload: GitHubPushPayload) => {
-  console.log(`Push event received for repo: ${payload.repository.full_name}`)
-  console.log(`Commits: ${payload.commits.length}`)
-  // Kafka producer will go here in the next step
+  const kafkaEvent: KafkaEvent = {
+    eventType: 'github.push',
+    userId: payload.pusher.name,
+    repoId: payload.repository.id.toString(),
+    payload: payload as unknown as Record<string, unknown>,
+    receivedAt: new Date().toISOString()
+  }
+  await publishEvent(kafkaEvent)
 }
 
 export default router
