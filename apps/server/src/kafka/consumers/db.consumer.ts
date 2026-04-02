@@ -1,6 +1,8 @@
 import { Kafka } from 'kafkajs'
 import { KafkaEvent } from '@pulseboard/shared'
 import { query } from '../../db'
+import { setUserPresence } from '../../redis/presence'
+import { updateLeaderboard } from '../../redis/leaderboard'
 
 const kafka = new Kafka({
   clientId: 'pulseboard-db-consumer',
@@ -45,6 +47,9 @@ export const startDbConsumer = async () => {
       )
 
       console.log(`Event persisted to DB: ${event.eventType}`)
+      await setUserPresence(event.userId)
+      await updateLeaderboard(event.repoId, event.userId)
+      console.log(`Presence and leaderboard updated for: ${event.userId}`)
     }
   })
 }
