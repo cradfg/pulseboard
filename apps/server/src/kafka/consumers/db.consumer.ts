@@ -3,6 +3,7 @@ import { KafkaEvent } from '@pulseboard/shared'
 import { query } from '../../db'
 import { setUserPresence } from '../../redis/presence'
 import { updateLeaderboard } from '../../redis/leaderboard'
+import { emitToUser } from '../../socket'
 
 const kafka = new Kafka({
   clientId: 'pulseboard-db-consumer',
@@ -50,6 +51,13 @@ export const startDbConsumer = async () => {
       await setUserPresence(event.userId)
       await updateLeaderboard(event.repoId, event.userId)
       console.log(`Presence and leaderboard updated for: ${event.userId}`)
+      
+      emitToUser(event.userId, 'activity', {
+      eventType: event.eventType,
+      repoId: event.repoId,
+      receivedAt: event.receivedAt
+    })
+    console.log(`WebSocket event emitted to user: ${event.userId}`)
     }
   })
 }
