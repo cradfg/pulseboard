@@ -8,6 +8,7 @@ import usersRouter from './routes/users'
 import webhookRouter from './routes/webhook'
 import { connectProducer } from './kafka/producer'
 import { startDbConsumer } from './kafka/consumers/db.consumer'
+import { rateLimiter } from './middleware/rateLimit'
 
 dotenv.config()
 
@@ -19,6 +20,7 @@ app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use('/api/users', usersRouter)
+app.use('/api/webhook', rateLimiter(100, 60))
 app.use('/api/webhook', webhookRouter)
 
 app.get('/health', async (req, res) => {
