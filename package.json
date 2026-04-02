@@ -1,0 +1,28 @@
+{
+  "name": "pulseboard",
+  "version": "1.0.0",
+  "description": "A real-time developer activity analytics platform that tracks GitHub activity, contributor leaderboards, and live coding presence using webhooks, WebSockets, Kafka, and Redis.",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cradfg/pulseboard.git"
+  },
+  "author": "Aravind A (cradfg)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cradfg/pulseboard/issues"
+  },
+  "homepage": "https://github.com/cradfg/pulseboard#readme"
+}
