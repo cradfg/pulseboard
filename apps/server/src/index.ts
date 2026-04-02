@@ -6,6 +6,8 @@ import dotenv from 'dotenv'
 import pool from './db'
 import usersRouter from './routes/users'
 import webhookRouter from './routes/webhook'
+import { connectProducer } from './kafka/producer'
+import { startDbConsumer } from './kafka/consumers/db.consumer'
 
 dotenv.config()
 
@@ -31,8 +33,10 @@ app.get('/health', async (req, res) => {
   }
 })
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`)
+  await connectProducer()
+  await startDbConsumer()
 })
 
 export default app
