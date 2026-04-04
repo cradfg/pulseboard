@@ -11,6 +11,7 @@ import { initSocket } from './socket'
 import { rateLimiter } from './middleware/rateLimit'
 import usersRouter from './routes/users'
 import webhookRouter from './routes/webhook'
+import statsRouter from './routes/stats'
 
 dotenv.config()
 
@@ -38,6 +39,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/users', usersRouter)
 app.use('/api/webhook', rateLimiter(100, 60))
 app.use('/api/webhook', webhookRouter)
+app.use('/api/stats', statsRouter)
 
 httpServer.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`)
