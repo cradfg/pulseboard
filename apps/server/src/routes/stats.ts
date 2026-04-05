@@ -1,12 +1,13 @@
 import { Router, Request, Response } from 'express'
 import { getUserStats, getRepoStats } from '../db/queries/stats'
 import { getCache, setCache } from '../redis/cache'
+import { query } from '../db'
 
 const router = Router()
 
 router.get('/user/:userId', async (req: Request, res: Response) => {
-  const { userId } = req.params
-  const cacheKey = `stats:user:${userId as string}`
+  const { userId } = req.params as { userId: string }
+  const cacheKey = `stats:user:${userId}`
 
   try {
     const cached = await getCache(cacheKey)
@@ -15,7 +16,18 @@ router.get('/user/:userId', async (req: Request, res: Response) => {
       return
     }
 
-    const stats = await getUserStats(userId as string)
+    // Resolve githubId to internal UUID
+    const userResult = await query(
+      `SELECT id FROM users WHERE github_id = $1`,
+      [userId]
+    )
+
+    if (!userResult.rows[0]) {
+      res.status(404).json({ error: 'User not found' })
+      return
+    }
+
+    const stats = await getUserStats(userResult.rows[0].id)
     await setCache(cacheKey, stats, 120)
     res.json({ stats, source: 'db' })
   } catch (err) {

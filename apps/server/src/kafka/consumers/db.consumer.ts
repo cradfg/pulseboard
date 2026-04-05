@@ -22,7 +22,6 @@ export const startDbConsumer = async () => {
       const event: KafkaEvent = JSON.parse(message.value.toString())
       console.log(`DB Consumer processing: ${event.eventType}`)
 
-      // Look up real UUID from github username
       const userResult = await query(
         `SELECT id FROM users WHERE username = $1`,
         [event.userId]
@@ -48,16 +47,18 @@ export const startDbConsumer = async () => {
       )
 
       console.log(`Event persisted to DB: ${event.eventType}`)
+
       await setUserPresence(event.userId)
       await updateLeaderboard(event.repoId, event.userId)
       console.log(`Presence and leaderboard updated for: ${event.userId}`)
-      
+
+      // Emit using username so socket room matches
       emitToUser(event.userId, 'activity', {
-      eventType: event.eventType,
-      repoId: event.repoId,
-      receivedAt: event.receivedAt
-    })
-    console.log(`WebSocket event emitted to user: ${event.userId}`)
+        eventType: event.eventType,
+        repoId: event.repoId,
+        receivedAt: event.receivedAt
+      })
+      console.log(`WebSocket event emitted to user: ${event.userId}`)
     }
   })
 }
