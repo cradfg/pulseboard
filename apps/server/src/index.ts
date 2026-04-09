@@ -12,6 +12,7 @@ import { rateLimiter } from './middleware/rateLimit'
 import usersRouter from './routes/users'
 import webhookRouter from './routes/webhook'
 import statsRouter from './routes/stats'
+import leaderboardRouter from './routes/leaderboard'
 
 dotenv.config()
 
@@ -40,6 +41,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/webhook', rateLimiter(100, 60))
 app.use('/api/webhook', webhookRouter)
 app.use('/api/stats', statsRouter)
+app.use('/api/leaderboard', leaderboardRouter)
 
 httpServer.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`)
